@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import Plotly from 'plotly.js-dist-min';
+import Plotly from 'plotly.js-cartesian-dist-min';
 
 // Fechas y números en español en ejes, selector de rango y hover.
 Plotly.register({
@@ -20,7 +20,7 @@ Plotly.register({
   },
 });
 
-// Componente React mínimo sobre Plotly (versión dist-min, ligera).
+// Componente React mínimo sobre Plotly (bundle cartesiano, el más ligero que cubre barras y líneas).
 // Expone los eventos que usan los enlaces entre gráficas: clic, cambio de zoom y selección.
 export default function Plot({ data, layout, config, style, onClick, onRelayout, onSelected }) {
   const ref = useRef(null);

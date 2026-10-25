@@ -4,6 +4,6 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
-    include: ['plotly.js-dist-min'],
+    include: ['plotly.js-cartesian-dist-min'],
   },
 });
