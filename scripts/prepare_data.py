@@ -138,6 +138,48 @@ def metricas(lab01: Path, lab02: Path) -> None:
     guardar("metricas_modelos.json", filas)
 
 
+def serie_por_via(lab01: Path) -> None:
+    """Filtro de vía y KPIs: serie mensual total y por vía de ingreso (aérea, terrestre, marítima)."""
+    base = lab01 / "resultados_laboratorio_1"
+    df = leer_csv(base / "series_mensuales_por_via.csv")
+    df["fecha"] = pd.to_datetime(df["fecha"]).dt.strftime("%Y-%m-%d")
+    df["total"] = df[["Aérea", "Terrestre", "Marítima"]].sum(axis=1)
+
+    # Control: la suma de las tres vías debe coincidir con el total reportado
+    tot = leer_csv(base / "series_totales_mensuales.csv")
+    tot["fecha"] = pd.to_datetime(tot["fecha"]).dt.strftime("%Y-%m-%d")
+    cruce = df.merge(tot[["fecha", "total_reportado"]], on="fecha", validate="one_to_one")
+    dif = (cruce["total"] - cruce["total_reportado"]).abs().max()
+    print(f"  diferencia máxima entre la suma de vías y el total reportado: {dif:.4f}")
+
+    filas = [
+        {
+            "fecha": r["fecha"],
+            "total": redondear(r["total"], 0),
+            "aerea": redondear(r["Aérea"], 0),
+            "terrestre": redondear(r["Terrestre"], 0),
+            "maritima": redondear(r["Marítima"], 0),
+        }
+        for r in df.to_dict("records")
+    ]
+    guardar("serie_por_via.json", filas)
+
+
+def recuperacion_regiones(lab01: Path) -> None:
+    """V5: visitantes de 2025 como proporción de los de 2019 en las tres regiones que analizó el Lab 1."""
+    df = leer_csv(lab01 / "resultados_laboratorio_1" / "regiones" / "impacto_pandemia_regiones.csv")
+    filas = [
+        {
+            "region": str(r.region).replace(" Del ", " del "),
+            "visitantes_2019": redondear(r.visitantes_2019, 0),
+            "visitantes_2025": redondear(r.visitantes_2025, 0),
+            "nivel_2025_vs_2019": redondear(r.nivel_2025_vs_2019, 4),
+        }
+        for r in df.itertuples()
+    ]
+    guardar("recuperacion_regiones.json", filas)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--lab01", type=Path, default=RAIZ.parent / "DS-LAB01")
@@ -151,6 +193,10 @@ def main() -> None:
     predicciones(args.lab01, args.lab02)
     print("Métricas de modelos")
     metricas(args.lab01, args.lab02)
+    print("Serie por vía (filtro global y KPIs)")
+    serie_por_via(args.lab01)
+    print("Recuperación por región (V5)")
+    recuperacion_regiones(args.lab01)
 
 
 if __name__ == "__main__":
