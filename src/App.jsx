@@ -1,9 +1,40 @@
-import V1 from './charts/V1';
-import V6 from './charts/V6';
+import { useEffect, useState } from 'react';
+import { GRAFICAS, PESTANAS } from './charts/registro';
+import BarraFiltros from './components/BarraFiltros';
+import Guia from './components/Guia';
+import Indicadores from './components/Indicadores';
+import Pestanas from './components/Pestanas';
+import SelectorGraficas from './components/SelectorGraficas';
+import { useFiltros } from './state/FiltrosContext';
 
-// Estructura mínima para el avance. Las pestañas, filtros globales y el resto
-// de gráficas (V2–V5, V7–V9) se agregan en la siguiente iteración.
+// La sección activa vive en la dirección (#panorama, #mercados, #modelos, #guia):
+// así se puede compartir un enlace directo a una sección y el botón "atrás" funciona.
+const ids = PESTANAS.map((p) => p.id);
+const leerHash = () => {
+  const h = window.location.hash.replace('#', '');
+  return ids.includes(h) ? h : ids[0];
+};
+
 export default function App() {
+  const [activa, setActiva] = useState(leerHash);
+  const { graficasOcultas } = useFiltros();
+
+  useEffect(() => {
+    const alCambiar = () => setActiva(leerHash());
+    window.addEventListener('hashchange', alCambiar);
+    return () => window.removeEventListener('hashchange', alCambiar);
+  }, []);
+
+  const cambiar = (id) => {
+    window.location.hash = id;
+    setActiva(id);
+  };
+
+  const pestana = PESTANAS.find((p) => p.id === activa);
+  const graficasDeLaSeccion = GRAFICAS.filter((g) => g.pestana === activa);
+  const visibles = graficasDeLaSeccion.filter((g) => !graficasOcultas.includes(g.id));
+  const esGuia = activa === 'guia';
+
   return (
     <div className="app">
       <header className="encabezado">
@@ -14,11 +45,30 @@ export default function App() {
         </p>
       </header>
 
-      <main>
-        <h2 className="seccion">Panorama</h2>
-        <V1 />
-        <h2 className="seccion">Modelos</h2>
-        <V6 />
+      <Pestanas activa={activa} onCambiar={cambiar} />
+
+      <main id={`panel-${activa}`} role="tabpanel" aria-labelledby={`pestana-${activa}`} tabIndex={-1}>
+        <p className="pregunta-seccion">{pestana.pregunta}</p>
+
+        {esGuia ? (
+          <Guia />
+        ) : (
+          <>
+            {activa === 'panorama' && <Indicadores />}
+            {(activa === 'panorama') && <BarraFiltros />}
+            <SelectorGraficas graficas={graficasDeLaSeccion} />
+
+            {graficasDeLaSeccion.length === 0 && (
+              <div className="sin-datos" role="status">Esta sección todavía no tiene gráficas.</div>
+            )}
+            {graficasDeLaSeccion.length > 0 && visibles.length === 0 && (
+              <div className="sin-datos" role="status">
+                No hay gráficas seleccionadas. Marque al menos una en &ldquo;¿Qué gráficas quiere ver?&rdquo;.
+              </div>
+            )}
+            {visibles.map(({ id, Componente }) => <Componente key={id} />)}
+          </>
+        )}
       </main>
 
       <footer className="pie">
