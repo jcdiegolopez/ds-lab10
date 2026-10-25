@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import Plot from './Plot';
 import TarjetaGrafica, { Cargando, SinDatos } from './TarjetaGrafica';
-import { useDatos } from '../state/useDatos';
+import { useSerieMensual } from '../state/useSerieMensual';
 import { useFiltros } from '../state/FiltrosContext';
 import { colores } from '../theme/colors';
 import { configBase, etiquetaMes, formatoNumero, layoutBase } from '../theme/plotlyBase';
@@ -41,12 +41,6 @@ function agrupar(filas, nivel) {
   return [...grupos.values()];
 }
 
-// Último día del mes de la última observación (para que el eje no se corte).
-function finDePeriodo(fechaISO) {
-  const [a, m] = fechaISO.split('-').map(Number);
-  return new Date(Date.UTC(a, m, 0)).toISOString().slice(0, 10);
-}
-
 function promedioMovil(valores, ventana) {
   return valores.map((_, i) => {
     if (i < ventana - 1) return null;
@@ -57,8 +51,8 @@ function promedioMovil(valores, ventana) {
 }
 
 export default function V1() {
-  const { datos, error } = useDatos('serie_total_mensual.json');
-  const { granularidad, setGranularidad, setRangoFechas } = useFiltros();
+  const { datos, limites, error } = useSerieMensual();
+  const { granularidad, setGranularidad, rangoFechas, setRangoFechas, via } = useFiltros();
 
   const puntos = useMemo(() => (datos ? agrupar(datos, granularidad) : []), [datos, granularidad]);
 
@@ -98,7 +92,8 @@ export default function V1() {
   }
 
   const ultimo = ventana ? trazas[1].y.at(-1) : null;
-  const RANGO_COMPLETO = [datos[0].fecha, finDePeriodo(datos.at(-1).fecha)];
+  const RANGO_COMPLETO = limites;
+  const rangoEje = rangoFechas ?? RANGO_COMPLETO; // el periodo elegido (zoom o selectores de año) manda sobre el eje
 
   const layout = layoutBase({
     height: 460,
@@ -109,7 +104,7 @@ export default function V1() {
     xaxis: {
       type: 'date',
       // Rango fijo a los datos: si no, las etiquetas del final estiran el eje.
-      range: [RANGO_COMPLETO[0], RANGO_COMPLETO[1]],
+      range: [rangoEje[0], rangoEje[1]],
       autorange: false,
       rangeslider: { visible: true, thickness: 0.08, bgcolor: colores.tarjetaOscura, range: RANGO_COMPLETO, autorange: false },
       rangeselector: {
@@ -176,12 +171,12 @@ export default function V1() {
     <TarjetaGrafica
       id="V1"
       titulo="Llegadas de visitantes, enero 2009 – junio 2026"
-      queMuestra="Las llegadas totales (gris) y su promedio móvil de un año (azul), que suaviza la estacionalidad."
+      queMuestra={`Las llegadas ${via === 'Todas' ? 'totales' : `por vía ${via.toLowerCase()}`} (gris) y su promedio móvil de un año (azul), que suaviza la estacionalidad.`}
       paraQueSirve="Dimensionar la caída de la pandemia y cuánto se ha recuperado el sector. Use el selector de rango o arrastre sobre la gráfica para acercarse."
       controles={controles}
       nota="La franja sombreada marca la pandemia (2020–2021). 2026 solo incluye enero a junio. Fuente: INGUAT / IGM."
     >
-      {puntos.length === 0 ? (
+      {puntos.length === 0 || y.every((v) => !v) ? (
         <SinDatos />
       ) : (
         <Plot
@@ -191,8 +186,10 @@ export default function V1() {
          
           style={{ width: '100%' }}
           onRelayout={(e) => {
-            if (e['xaxis.range[0]']) setRangoFechas([e['xaxis.range[0]'], e['xaxis.range[1]']]);
-            else if (e['xaxis.range']) setRangoFechas(e['xaxis.range']);
+            // Plotly entrega fechas con hora; se guardan solo como 'YYYY-MM-DD'.
+            const dia = (f) => String(f).slice(0, 10);
+            if (e['xaxis.range[0]']) setRangoFechas([dia(e['xaxis.range[0]']), dia(e['xaxis.range[1]'])]);
+            else if (e['xaxis.range']) setRangoFechas([dia(e['xaxis.range'][0]), dia(e['xaxis.range'][1])]);
             else if (e['xaxis.autorange']) setRangoFechas(null);
           }}
         />

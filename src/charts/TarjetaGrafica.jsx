@@ -16,10 +16,10 @@ export default function TarjetaGrafica({ id, titulo, queMuestra, paraQueSirve, c
   );
 }
 
-export function SinDatos() {
+export function SinDatos({ mensaje }) {
   return (
-    <div className="sin-datos">
-      No hay datos para esta selección. Pruebe ampliar el rango o cambiar la vía.
+    <div className="sin-datos" role="status">
+      {mensaje ?? 'No hay datos para esta selección. Pruebe ampliar el rango o cambiar la vía.'}
     </div>
   );
 }

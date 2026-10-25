@@ -11,6 +11,7 @@ export const colores = {
   atencionTexto: '#A84B12',
   quetzal: '#2E7D4F', // acento institucional / LSTM
   contexto: '#6B7280', // referencias y ejes
+  contextoClaro: '#C5CAD1', // barras por debajo de la referencia (decorativo; el valor va escrito)
   rejilla: '#E5E0D6',
 };
 
