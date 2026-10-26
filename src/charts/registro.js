@@ -1,11 +1,15 @@
 import V1 from './V1';
 import V2 from './V2';
+import V3 from './V3';
+import V4 from './V4';
 import V5 from './V5';
 import V6 from './V6';
+import V7 from './V7';
+import V8 from './V8';
+import V9 from './V9';
 
 // Registro de gráficas: cada una declara en qué sección va. Para sumar una gráfica nueva
-// (V3, V4, V7, V8, V9) basta con importarla aquí; el selector de gráficas y las pestañas
-// la toman solas.
+// basta con importarla aquí; el selector de gráficas y las pestañas la toman solas.
 export const PESTANAS = [
   { id: 'panorama', nombre: 'Panorama', pregunta: 'Qué ha pasado con las llegadas y cuándo se concentran.' },
   { id: 'mercados', nombre: 'Mercados y vías', pregunta: 'De dónde llegan los visitantes y por dónde entran.' },
@@ -16,6 +20,11 @@ export const PESTANAS = [
 export const GRAFICAS = [
   { id: 'V1', pestana: 'panorama', nombre: 'Llegadas mensuales', Componente: V1 },
   { id: 'V2', pestana: 'panorama', nombre: 'Estacionalidad', Componente: V2 },
+  { id: 'V3', pestana: 'mercados', nombre: 'Vías y fronteras', Componente: V3 },
+  { id: 'V4', pestana: 'mercados', nombre: 'Ranking de mercados', Componente: V4 },
   { id: 'V5', pestana: 'mercados', nombre: 'Recuperación frente a 2019', Componente: V5 },
   { id: 'V6', pestana: 'modelos', nombre: 'Real frente a tres modelos', Componente: V6 },
+  { id: 'V7', pestana: 'modelos', nombre: 'Error por modelo', Componente: V7 },
+  { id: 'V8', pestana: 'modelos', nombre: 'Aprendizaje del LSTM', Componente: V8 },
+  { id: 'V9', pestana: 'modelos', nombre: 'Error por mes', Componente: V9 },
 ];

@@ -77,7 +77,7 @@ export default function V2() {
     }],
     annotations: [{
       xref: 'paper', x: 0, xanchor: 'left', yref: 'y', y: 100, yanchor: 'top', showarrow: false, xshift: 4, yshift: -2,
-      text: 'Mes típico = 100', font: { size: 12, color: colores.contexto },
+      text: 'Mes típico = 100', font: { size: 13, color: colores.contexto },
     }],
   });
 
