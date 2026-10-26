@@ -1,10 +1,10 @@
-import { useFiltros, VIAS } from '../state/FiltrosContext';
+import { MEDIDAS, useFiltros, VIAS } from '../state/FiltrosContext';
 import { useSerieMensual } from '../state/useSerieMensual';
 
-// Filtros globales: afectan a todas las gráficas que usan la serie de llegadas (V1 y V2 hoy).
+// Filtros globales de Panorama y Mercados: la vía afecta a V1–V4 y el periodo a V1–V4 (V3 y V4 por años completos).
 // El periodo es el mismo estado que el zoom de V1, así que ambos se mantienen sincronizados.
 export default function BarraFiltros() {
-  const { via, setVia, rangoFechas, setRangoFechas } = useFiltros();
+  const { via, setVia, medida, setMedida, rangoFechas, setRangoFechas } = useFiltros();
   const { limites } = useSerieMensual();
   if (!limites) return null;
 
@@ -43,6 +43,23 @@ export default function BarraFiltros() {
       </div>
 
       <div className="filtro">
+        <span className="control-etiqueta" id="et-medida">Medida:</span>
+        <div className="grupo-botones" role="group" aria-labelledby="et-medida">
+          {MEDIDAS.map((m) => (
+            <button
+              key={m.clave}
+              type="button"
+              className={medida === m.clave ? 'activo' : ''}
+              aria-pressed={medida === m.clave}
+              onClick={() => setMedida(m.clave)}
+            >
+              {m.etiqueta}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="filtro">
         <span className="control-etiqueta">Periodo:</span>
         <label className="selector">
           <span>Desde</span>
@@ -60,6 +77,11 @@ export default function BarraFiltros() {
           Todo el periodo
         </button>
       </div>
+      <p className="filtro-ayuda">
+        {medida === 'comparable'
+          ? 'Desde 2023 la fuente dejó de informar las categorías “Guatemala” y cruceristas. La medida comparable las quita de todos los años para que 2019 y 2025 midan lo mismo.'
+          : 'Cifras tal como las publica la fuente. Desde 2023 no incluyen las categorías “Guatemala” ni cruceristas, así que no se comparan con años anteriores.'}
+      </p>
     </section>
   );
 }

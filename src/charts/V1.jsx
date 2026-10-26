@@ -4,7 +4,7 @@ import TarjetaGrafica, { Cargando, SinDatos } from './TarjetaGrafica';
 import { useSerieMensual } from '../state/useSerieMensual';
 import { useFiltros } from '../state/FiltrosContext';
 import { colores } from '../theme/colors';
-import { configBase, etiquetaMes, formatoNumero, layoutBase } from '../theme/plotlyBase';
+import { configBase, esAngosto, etiquetaMes, formatoNumero, layoutBase } from '../theme/plotlyBase';
 
 // Niveles de detalle: cada uno define cómo agrupar y la ventana del promedio móvil (= 1 año).
 const NIVELES = {
@@ -52,7 +52,7 @@ function promedioMovil(valores, ventana) {
 
 export default function V1() {
   const { datos, limites, error } = useSerieMensual();
-  const { granularidad, setGranularidad, rangoFechas, setRangoFechas, via } = useFiltros();
+  const { granularidad, setGranularidad, rangoFechas, setRangoFechas, via, medida } = useFiltros();
 
   const puntos = useMemo(() => (datos ? agrupar(datos, granularidad) : []), [datos, granularidad]);
 
@@ -98,7 +98,7 @@ export default function V1() {
   const layout = layoutBase({
     height: 460,
     uirevision: granularidad, // el zoom se reinicia solo al cambiar el nivel de detalle
-    margin: { l: 70, r: 140, t: 30, b: 40 },
+    margin: { l: 60, r: esAngosto() ? 16 : 140, t: 30, b: 40 },
     hovermode: 'x unified',
     bargap: 0.25,
     xaxis: {
@@ -138,10 +138,10 @@ export default function V1() {
         font: { size: 13, color: colores.contexto }, xanchor: 'center', yanchor: 'top',
       },
       {
-        x: CAMBIO_FUENTE, xref: 'x', y: 0.98, yref: 'paper', text: 'Cambio de clasificación<br>de la fuente',
-        showarrow: false, font: { size: 12, color: colores.contexto }, xanchor: 'left', yanchor: 'top', xshift: 4, align: 'left',
+        x: CAMBIO_FUENTE, xref: 'x', y: 0.98, yref: 'paper', text: medida === 'comparable' ? 'Cambio de clasificación<br>de la fuente (ajustado)' : 'Cambio de clasificación:<br>sin “Guatemala” ni cruceristas',
+        showarrow: false, font: { size: 13, color: colores.contexto }, xanchor: 'left', yanchor: 'top', xshift: 4, align: 'left',
       },
-      ...(ultimo
+      ...(ultimo && !esAngosto()
         ? [{
             x: x.at(-1), y: ultimo, xref: 'x', yref: 'y', text: `<b>Promedio móvil</b><br>${formatoNumero.format(ultimo)}`,
             showarrow: false, xanchor: 'left', xshift: 8, font: { size: 13, color: colores.observado }, align: 'left',
@@ -174,7 +174,12 @@ export default function V1() {
       queMuestra={`Las llegadas ${via === 'Todas' ? 'totales' : `por vía ${via.toLowerCase()}`} (gris) y su promedio móvil de un año (azul), que suaviza la estacionalidad.`}
       paraQueSirve="Dimensionar la caída de la pandemia y cuánto se ha recuperado el sector. Use el selector de rango o arrastre sobre la gráfica para acercarse."
       controles={controles}
-      nota="La franja sombreada marca la pandemia (2020–2021). 2026 solo incluye enero a junio. Fuente: INGUAT / IGM."
+      nota={'La franja sombreada marca la pandemia (2020–2021). 2026 solo incluye enero a junio. '
+        + (medida === 'comparable'
+          ? 'Medida comparable: se excluyen en todos los años las categorías “Guatemala” y cruceristas, que la fuente dejó de informar en 2023. '
+            + (via === 'Marítima' ? 'Entre 2017 y 2022 la fuente registró a todos los pasajeros por vía marítima como cruceristas, así que la medida comparable de esa vía vale cero esos años: para la vía marítima conviene usar la medida reportada. ' : '')
+          : 'Medida reportada: la caída de enero de 2023 se debe a que la fuente dejó de informar “Guatemala” y cruceristas, no a menos visitantes. ')
+        + 'Fuente: INGUAT / IGM.'}
     >
       {puntos.length === 0 || y.every((v) => !v) ? (
         <SinDatos />
@@ -183,7 +188,6 @@ export default function V1() {
           data={trazas}
           layout={layout}
           config={configBase}
-         
           style={{ width: '100%' }}
           onRelayout={(e) => {
             // Plotly entrega fechas con hora; se guardan solo como 'YYYY-MM-DD'.

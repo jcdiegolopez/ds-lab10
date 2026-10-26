@@ -41,7 +41,8 @@ export function indicadores(filas) {
   return {
     record,
     caida2020: porAnio[2019] && porAnio[2020] ? variacion(porAnio[2020].total, porAnio[2019].total) : null,
-    nivel2025: porAnio[2019] && porAnio[2025] && porAnio[2025].meses === 12
+    // Sin visitantes en 2019 no hay base (pasa en la vía marítima con la medida comparable).
+    nivel2025: porAnio[2019]?.total > 0 && porAnio[2025] && porAnio[2025].meses === 12
       ? porAnio[2025].total / porAnio[2019].total
       : null,
     parcial: {
