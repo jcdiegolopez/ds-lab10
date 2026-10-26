@@ -3,6 +3,7 @@
 
 const GLOSARIO = [
   ['Promedio móvil', 'El promedio de los últimos 12 meses. Suaviza las subidas y bajadas de temporada para ver la tendencia de fondo.'],
+  ['Medida comparable', 'Las llegadas sin las categorías “Guatemala” y cruceristas, que la fuente dejó de informar desde 2023. Permite comparar años de antes y después del cambio. La medida reportada son las cifras tal como las publica la fuente.'],
   ['Índice estacional', 'Compara cada mes con un mes típico, que vale 100. Un diciembre de 135 significa que ese mes trae un 35 % más de visitantes que un mes típico.'],
   ['Periodo de prueba', 'Los 63 meses (abril de 2021 a junio de 2026) que los modelos no vieron al aprender. Sirven para medir qué tan bien pronostican.'],
   ['Holt-Winters', 'Modelo que proyecta con la tendencia y la estacionalidad recientes: asume que el futuro se parece al pasado reciente.'],
@@ -10,13 +11,16 @@ const GLOSARIO = [
   ['LSTM', 'Red neuronal que aprende patrones de la serie. Es más flexible, pero es más difícil explicar por qué predice lo que predice.'],
   ['MAE', 'Cuántos visitantes por mes se equivoca el modelo, en promedio. Se lee directamente en visitantes.'],
   ['RMSE', 'Parecido al MAE, pero castiga más los errores grandes. Un RMSE bajo significa pocos errores graves.'],
+  ['Referencia (seasonal naïve)', 'Pronosticar que cada mes repetirá lo que pasó el mismo mes del año anterior. No es un modelo del tablero: sirve para saber si un modelo aporta algo (V7).'],
+  ['Época', 'Una vuelta completa de la red neuronal sobre los datos de aprendizaje. El entrenamiento se detiene cuando el error con meses no vistos deja de bajar (V8).'],
   ['Error de un mes', 'Valor real menos valor pronosticado. Si es positivo, llegaron más visitantes de los que el modelo esperaba.'],
 ];
 
 const LIMITACIONES = [
-  'En 2022 la fuente cambió de clasificación. Las comparaciones de recuperación se hacen contra 2019, antes del cambio.',
+  'Desde enero de 2023 la fuente dejó de informar las categorías “Guatemala” y cruceristas, y agrupa los países poco frecuentes. Por eso el tablero usa por defecto la medida comparable, que quita esas dos categorías de todos los años. Con la medida reportada, 2023 en adelante no se compara con años anteriores.',
   '2026 solo tiene datos de enero a junio. Un año incompleto no se compara con un año completo.',
   'Los modelos se entrenaron con datos hasta marzo de 2021, durante la pandemia. Por eso no anticiparon el rebote posterior: esa es una limitación del entrenamiento, no una predicción de que el sector no se recuperaría.',
+  'Los modelos se evaluaron con la serie tal como la reporta la fuente. Desde 2023 esa serie ya no incluye “Guatemala” ni cruceristas, así que parte del error de los modelos en esos meses se debe al cambio de la fuente.',
   'Las predicciones son retrospectivas: se comparan con meses que ya ocurrieron. El tablero no proyecta el futuro.',
   'El modelo LSTM solo existe para el total y la vía aérea. La comparación de los tres modelos se limita a esas dos series.',
   'Los datos miden llegadas de visitantes. No miden gasto, ocupación ni impacto ambiental o social, así que el tablero no permite hablar de esos temas.',

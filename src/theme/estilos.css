@@ -59,11 +59,12 @@ body {
 .muestra-sarima { border-top: 3px dotted var(--secundario); }
 .muestra-lstm { border-top: 3px dashed var(--quetzal); border-image: repeating-linear-gradient(90deg, var(--quetzal) 0 8px, transparent 8px 11px, var(--quetzal) 11px 13px, transparent 13px 16px) 1; }
 
-.aviso-fijo { display: inline-block; background: var(--tarjeta-oscura); border-left: 4px solid var(--atencion); padding: 6px 12px; font-size: 14px; margin: 4px 0 8px; }
+.aviso-fijo { display: inline-block; background: #FBEFE4; border: 1px solid #EFC9AC; border-radius: 8px; padding: 6px 12px; font-size: 14px; margin: 4px 0 8px; }
+.lectura { font-size: 15px; font-weight: 600; color: var(--titulo); margin: 4px 0 8px; max-width: 75ch; }
 .nota { font-size: 14px; color: var(--contexto); margin: 8px 0 0; }
 .sin-datos { padding: 48px 16px; text-align: center; color: var(--contexto); background: var(--tarjeta-oscura); border-radius: 8px; }
 
-.detalle-mes { font-size: 14px; background: var(--tarjeta-oscura); border-left: 4px solid var(--atencion); padding: 8px 12px; margin: 8px 0; }
+.detalle-mes { font-size: 14px; background: #FBEFE4; border: 1px solid #EFC9AC; border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
 .enlace { font: inherit; font-size: 14px; background: none; border: 0; color: var(--observado); text-decoration: underline; cursor: pointer; margin-left: 12px; }
 
 .tabla-metricas { border-collapse: collapse; margin-top: 16px; font-size: 14px; min-width: 320px; }
@@ -103,6 +104,8 @@ body {
   background: var(--tarjeta); color: var(--tinta);
 }
 .selector select:focus-visible { outline: 3px solid var(--atencion); outline-offset: 2px; }
+.enlace.sin-margen { margin-left: 0; }
+.filtro-ayuda { margin: 0; font-size: 14px; color: var(--contexto); flex: 1 1 320px; }
 .enlace:disabled { color: var(--contexto); text-decoration: none; cursor: default; }
 .selector-graficas { background: var(--tarjeta-oscura); border-radius: 12px; padding: 10px 16px; margin: 0 0 20px; }
 

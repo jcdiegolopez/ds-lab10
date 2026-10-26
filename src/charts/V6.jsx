@@ -2,20 +2,15 @@ import Plot from './Plot';
 import TarjetaGrafica, { Cargando, SinDatos } from './TarjetaGrafica';
 import { useDatos } from '../state/useDatos';
 import { useFiltros } from '../state/FiltrosContext';
+import { ORDEN_MODELOS } from '../state/modelos';
 import { colores, estiloModelos } from '../theme/colors';
-import { configBase, etiquetaMes, formatoNumero, layoutBase } from '../theme/plotlyBase';
-
-const SERIES = [
-  { clave: 'Total mensual', etiqueta: 'Total' },
-  { clave: 'Vía aérea', etiqueta: 'Vía aérea' },
-];
-const ORDEN_MODELOS = ['hw', 'sarima', 'lstm'];
+import { configBase, esAngosto, etiquetaMes, formatoNumero, layoutBase } from '../theme/plotlyBase';
 
 export default function V6() {
   const pred = useDatos('predicciones_modelos.json');
   const met = useDatos('metricas_modelos.json');
   const {
-    serieModelo, setSerieModelo,
+    serieModelo,
     modelosVisibles, setModelosVisibles,
     mesSeleccionado, setMesSeleccionado,
   } = useFiltros();
@@ -76,16 +71,19 @@ export default function V6() {
       }]
     : [];
 
+  const angosto = esAngosto();
   const layout = layoutBase({
     height: 440,
     uirevision: serieModelo,
-    margin: { l: 70, r: 130, t: 20, b: 45 },
+    margin: { l: 60, r: angosto ? 16 : 130, t: angosto ? 50 : 20, b: 45 },
+    showlegend: angosto,
+    legend: { orientation: 'h', x: 0, y: 1.02, yanchor: 'bottom', font: { size: 13 } },
     hovermode: 'x unified',
     // Rango fijo a los datos: si no, las etiquetas directas estiran el eje.
-    xaxis: { type: 'date', tickformat: '%b %Y', dtick: 'M6', range: [x[0], x.at(-1)], autorange: false },
+    xaxis: { type: 'date', tickformat: '%b %Y', dtick: angosto ? 'M12' : 'M6', range: [x[0], x.at(-1)], autorange: false },
     yaxis: { title: { text: 'Llegadas', font: { size: 13, color: colores.contexto } }, rangemode: 'tozero' },
     shapes,
-    annotations: finales.map((f) => ({
+    annotations: angosto ? [] : finales.map((f) => ({
       x: x.at(-1), y: f.yEtiqueta ?? f.y, xref: 'x', yref: 'y', text: `<b>${f.texto}</b>`,
       showarrow: false, xanchor: 'left', xshift: 8, font: { size: 13, color: f.color },
     })),
@@ -95,20 +93,6 @@ export default function V6() {
 
   const controles = (
     <>
-      <div className="grupo-botones" role="group" aria-label="Serie">
-        <span className="control-etiqueta">Serie:</span>
-        {SERIES.map((s) => (
-          <button
-            key={s.clave}
-            type="button"
-            className={serieModelo === s.clave ? 'activo' : ''}
-            aria-pressed={serieModelo === s.clave}
-            onClick={() => { setSerieModelo(s.clave); setMesSeleccionado(null); }}
-          >
-            {s.etiqueta}
-          </button>
-        ))}
-      </div>
       <fieldset className="casillas">
         <legend className="control-etiqueta">Modelos:</legend>
         {ORDEN_MODELOS.map((m) => (
@@ -129,13 +113,10 @@ export default function V6() {
       id="V6"
       titulo="Real frente a tres modelos, abril 2021 – junio 2026"
       queMuestra="Las llegadas reales (azul sólido) y lo que anticipó cada modelo (líneas punteadas) en los 63 meses de prueba."
-      paraQueSirve="Decidir cuánta confianza dar a una proyección. Haga clic en un mes para ver el error de cada modelo."
+      paraQueSirve="Decidir cuánta confianza dar a una proyección. Haga clic en un mes para ver el error de cada modelo; V9 lo resalta."
       controles={controles}
-      nota="Los modelos se entrenaron con datos hasta marzo de 2021; por eso no anticiparon el rebote pospandemia. Son predicciones retrospectivas, no un pronóstico a futuro."
+      nota="Los modelos se entrenaron con datos hasta marzo de 2021; por eso no anticiparon el rebote pospandemia. Son predicciones retrospectivas, no un pronóstico a futuro. Desde enero de 2023 el dato real se mide sin las categorías “Guatemala” y cruceristas, que la fuente dejó de informar: parte del error de esos meses viene de ese cambio y no del modelo."
     >
-      <div className="aviso-fijo">
-        Entrenamiento: enero 2009 – marzo 2021 · Prueba: abril 2021 – junio 2026
-      </div>
       {filas.length === 0 ? (
         <SinDatos />
       ) : (
@@ -143,7 +124,6 @@ export default function V6() {
           data={trazas}
           layout={layout}
           config={configBase}
-         
           style={{ width: '100%' }}
           onClick={(e) => {
             const fecha = e.points?.[0]?.x;
@@ -156,7 +136,7 @@ export default function V6() {
           <strong>{etiquetaMes(seleccion.fecha)}</strong> · Real {formatoNumero.format(seleccion.real)}
           {activos.map((m) => (
             <span key={m}>
-              {' · '}{estiloModelos[m].nombre}: error {formatoNumero.format(seleccion.real - seleccion[m])}
+              {' · '}{estiloModelos[m].nombre}: error {seleccion.real - seleccion[m] >= 0 ? '+' : '−'}{formatoNumero.format(Math.abs(seleccion.real - seleccion[m]))}
             </span>
           ))}
           <button type="button" className="enlace" onClick={() => setMesSeleccionado(null)}>Quitar selección</button>

@@ -28,6 +28,9 @@ export function layoutBase(extra = {}) {
   };
 }
 
+// En pantallas angostas las etiquetas al final de las líneas no caben: se usa leyenda arriba.
+export const esAngosto = () => typeof window !== 'undefined' && window.innerWidth < 640;
+
 export const configBase = {
   displaylogo: false,
   responsive: true,

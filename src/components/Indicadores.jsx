@@ -6,12 +6,14 @@ import { Cargando } from '../charts/TarjetaGrafica';
 const MENOS = '−'; // signo menos tipográfico
 const pct = (v, decimales = 0) => (v == null ? '—' : `${(v * 100).toFixed(decimales)} %`);
 const pctConSigno = (v) => (v == null ? '—' : `${v >= 0 ? '+' : MENOS}${Math.abs(v * 100).toFixed(1)} %`);
+// Cifras grandes en millones; las de una vía pequeña (marítima) en miles.
+const compacto = (v) => (v >= 999500 ? `${(v / 1e6).toFixed(1)} M` : `${Math.round(v / 1e3)} mil`);
 const NOMBRES_MES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
 // Tarjetas con una cifra. Se calculan con la serie de la vía elegida en el filtro global.
 export default function Indicadores() {
   const { datos, error } = useSerieMensual();
-  const { via } = useFiltros();
+  const { via, medida } = useFiltros();
   if (!datos) return <Cargando error={error} />;
 
   const k = indicadores(datos);
@@ -22,19 +24,22 @@ export default function Indicadores() {
   const tarjetas = [
     {
       titulo: 'Año récord',
-      cifra: k.record ? `${(k.record.total / 1e6).toFixed(1)} M` : '—',
+      cifra: k.record ? compacto(k.record.total) : '—',
       detalle: k.record ? `Visitantes en ${k.record.anio} (${ambito})` : 'Sin datos',
     },
     {
       titulo: 'Golpe de la pandemia',
-      cifra: pctConSigno(k.caida2020).replace('.0', ''),
+      cifra: k.caida2020 == null ? '—' : `${k.caida2020 >= 0 ? '+' : MENOS}${Math.round(Math.abs(k.caida2020 * 100))} %`,
       detalle: 'Cambio de 2020 frente a 2019',
       atencion: true,
     },
     {
       titulo: 'Recuperación',
       cifra: pct(k.nivel2025),
-      detalle: 'Nivel de 2025 respecto de 2019',
+      detalle: k.nivel2025 == null
+        ? 'Sin base en 2019 para esta medida y vía'
+        : medida === 'comparable' ? 'Nivel de 2025 respecto de 2019 (medida comparable)' : 'Nivel de 2025 respecto de 2019. No comparable: la fuente cambió en 2023',
+      atencion: medida !== 'comparable',
     },
     {
       titulo: `${parcial.anio} frente a ${parcial.anio - 1}`,

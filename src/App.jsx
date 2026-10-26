@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { GRAFICAS, PESTANAS } from './charts/registro';
 import BarraFiltros from './components/BarraFiltros';
+import BarraModelos from './components/BarraModelos';
 import Guia from './components/Guia';
 import Indicadores from './components/Indicadores';
 import Pestanas from './components/Pestanas';
@@ -55,7 +56,8 @@ export default function App() {
         ) : (
           <>
             {activa === 'panorama' && <Indicadores />}
-            {(activa === 'panorama') && <BarraFiltros />}
+            {(activa === 'panorama' || activa === 'mercados') && <BarraFiltros />}
+            {activa === 'modelos' && <BarraModelos />}
             <SelectorGraficas graficas={graficasDeLaSeccion} />
 
             {graficasDeLaSeccion.length === 0 && (
